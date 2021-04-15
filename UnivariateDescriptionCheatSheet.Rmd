@@ -12,11 +12,12 @@ output:
 library(flexdashboard) #
 library(rio)
 library(ggthemes)
-load("SCNominees.RData")
-load("counties.RData")
-df <- import("cabinet-turnover.csv")
+load("data/SCNominees.RData")
+load("data/counties.RData")
+df <- import("data/cabinet-turnover.csv")
 df$length <- as.numeric(df$length) #length was imported as a character vector, changes to numeric
 
+nominees$Result <- factor(nominees$Result, labels = c("Confirmed", "Delayed", "No Action", "Postponed", "Rejected", "Withdrawn"))
 ```
 
 ### **Levels of Measurement:** Regardless of the analysis you want to conduct with your data, the first question to answer is what is the level of measurement of my variable(s)
@@ -26,12 +27,22 @@ df$length <- as.numeric(df$length) #length was imported as a character vector, c
 
 **** 
 
--	Nominal: Variables that do not have any qualitative values. “Labels”
-  -	Examples: Gender (Male/Female/Other), Political Party (Republican/Democrat/Independent/Other)
--	Ordinal: Take values with a natural order or rank, but the differences between those ranks aren’t equal: 
-  -	Examples: Levels of Education (High School/College/PhD), T-Shirt Size (Small/Medium/Large)
--	Interval: Takes values that have a natural order and differences between the values are equal: “Scale”: 
-  -	Examples: Unemployment Rate (percentage of the population), Vote Share (percentage of the population)
+-	Nominal: Variables that do not have meaningful quantitative values. Instead the values of the variable denote “labels.”
+
+    +	Gender (Male, Female, Other), 
+    + Political Party (Republican, Democrat, Independent, Other)
+    + Race (Black, White, Hispanic, Asian, Other)
+
+-	Ordinal: Values of the variable have a natural order or rank, but the differences between those ranks aren’t equal.
+
+    + Levels of Education (High School/College/PhD), 
+    + T-Shirt Size (Small/Medium/Large)
+  
+-	Interval: Values of the variable have a natural order and differences between the values are equal: “Scale.” 
+
+    + Unemployment Rate (percentage of the population), 
+    + Vote Share (percentage of the population)
+    + GDP per capita
 
 
 ### **Summary Statistics:** How you summarize the main features of a variable depends on the level of measurement
@@ -56,7 +67,7 @@ df$length <- as.numeric(df$length) #length was imported as a character vector, c
 |                                                                                                                                         <span style="color:blue">Nominal</span>                                                                                                                                         |                                <span style="color:blue">Ordinal</span>                                |                                                  <span style="color:blue">Interval</span>                                                   |
 | Central Tendency:<br>Mode <br> <br>                                                                                                                                                                                                                                                     | Central Tendency:<br>Mode or Median<br> <br>                          | Central Tendency<br>Mean, Median, Mode<br>*Note: Mode will seldom be useful; median is not influenced by outliers, mean is. *<br> <br>  |
 | Dispersion:<br>Create a Frequency Table<br> <br>                                                                                                                                                                                                                                        | Dispersion:<br>Create a Frequency Table<br> <br>                      | Dispersion <br>Range, Interquartile Range, Standard Deviation<br> <br>                                      |
-| Shape of the Distribution:<br>Unimodal, Bimodal, Multimodal<br> <br>*Note: Be careful when describing the shape of the distribution of a nominal <br> variable because due to it not being coded numerically, the shape can shift <br>depending on how you code the nominal variables*<br> <br>  | Shape of the Distribution:<br>Unimodal, Bimodal, Multimodal<br> <br>  | Shape of the Distribution<br>Unimodal, Bimodal, Multimodal, symmetric, Normal<br> <br>                      |
+| Shape of the Distribution:<br>Unimodal, Bimodal, Multimodal<br> <br>*Note: Be careful when describing the shape of the distribution of a nominal variable because due to it not being coded numerically, the shape can shift depending on how you code the nominal variables*<br> <br>  | Shape of the Distribution:<br>Unimodal, Bimodal, Multimodal<br> <br>  | Shape of the Distribution<br>Unimodal, Bimodal, Multimodal, symmetric, Normal<br> <br>                      |
 | Visualization:<br>Bar Plot                                                                                                                                                                                                                                                              | Visualization:<br>Bar Plot                                            | Visualization: <br>Histogram, Box Plot                                                                      |
 
 ***
@@ -67,14 +78,14 @@ df$length <- as.numeric(df$length) #length was imported as a character vector, c
 
 - Central Tendency Functions
 
-  +	Mean: calculates the average value: mean(dataframe$name of variable, na.rm=TRUE)
-  +	Median: calculates the value lying at the midpoint of a frequency distribution: median(dataframe$name of variable, na.rm=TRUE)
+  +	Mean: calculates the average value: `mean(dataframe$name of variable, na.rm=TRUE)`
+  +	Median: calculates the value lying at the midpoint of a frequency distribution: `median(dataframe$name of variable, na.rm=TRUE)`
 
 - Dispersion: 
 
-  +	Range. Calculates smallest ( min[] ) and largest (max[]): range(dataframe$name of variable, na.rm = TRUE)
-  + Percentiles. The value of the variables that has a certain % of data points below it: Includes interquartile range: quantile(dataframe$name of variable, na.rm=TRUE, probs=c(insert the percentiles you want))
-  + Standard deviation: tell us average spread of values of a variable around the mean value of a variable.  Empirical rule: 68% of data falls between 1 standard deviation of mean, 95% of data falls between 2 standard deviations of the mean, and 98% of data falls between 3 standard deviations of the mean: sd(dataframe$name of variable, na.rm = TRUE)
+  +	Range. Calculates smallest ( min[] ) and largest (max[]): `range(dataframe$name of variable, na.rm = TRUE)`
+  + Percentiles. The value of the variables that has a certain % of data points below it: Includes interquartile range: `quantile(dataframe$name of variable, na.rm=TRUE, probs=c(insert the percentiles you want))`
+  + Standard deviation: tell us average spread of values of a variable around the mean value of a variable.  Empirical rule: 68% of data falls between 1 standard deviation of mean, 95% of data falls between 2 standard deviations of the mean, and 98% of data falls between 3 standard deviations of the mean: `sd(dataframe$name of variable, na.rm = TRUE)`
 
 - Assessing Data Shape 
 
@@ -94,24 +105,28 @@ library(dplyr)
 knitr::kable(nominees %>%
   group_by(Result) %>%
   summarise(freq = n()) %>%
-  mutate(prop = freq / sum(freq))
+  mutate(prop = round(freq / sum(freq),3))
 # The overwhelming majority (119 of the 163 or 73%) of nominees to the US Supreme Court are confirmed; 12 or 7.4% were withdrawn or rejected; 10 (6.1%) were not acted upon; 7 (of 4.3%) of nominations were delayed and 3 (just under 2%) were postponed
 )
 ```
 
 
+To precisely describe the central tendency and dispersion of a categorical variable we typically produce a frequency table, which counts the number of cases for each value of the variable. Often we augment the frequency table by reporting the proportion of cases as well as the counts. The table to the left reports the number and proportion of nominees to the US Supreme Court that were confirmed (119, 0.730), delayed (7, 0.043), not acted upon (10, 0.061), postponed (3, 0.018), rejected (12, 0.074), and withdrawn (12, 0.074) beginning with the nominees of George Washington and ending with those of Donald Trump.
+
 ***
+
+
 ```{r, eval = FALSE, echo = TRUE}
 library(dplyr)
 name of data frame %>%
-group_by (name of nominal variable) %>%
+group_by (name of categorical variable) %>%
 summarize (freq = n()) %>%
 mutate (prop = freq/sum(freq))
 
 ```
 
 
-### **Bar plots:** Illustrate the central tendency, dispersion, and distribution of a categorical variable 
+### **Bar plots:** Present the information in a frequency/proportion table as a visualization of the central tendency, dispersion, and distribution of a categorical variable 
 
 
 
@@ -122,8 +137,7 @@ p <- ggplot(data = nominees, mapping = aes(x = Result)) +
   labs(title = "Nearly All Nominations to the United States Supreme Court Are Confirmed",
        x = NULL,
        y = "Frequency",
-       caption = "www.senate.gov") +
-  scale_x_discrete(labels = c("Confirmed", "Delayed", "No Action", "Postponed", "Rejected", "Withdrawn"))
+       caption = "www.senate.gov")
 
 library(plotly)
 q <- ggplot(data = nominees, mapping = aes(x = Result)) +
@@ -131,8 +145,7 @@ q <- ggplot(data = nominees, mapping = aes(x = Result)) +
   labs(title = "Nearly All Nominations to the United States Supreme Court Are Confirmed",
        x = NULL,
        y = "Proportion",
-       caption = "www.senate.gov") +
-  scale_x_discrete(labels = c("Confirmed", "Delayed", "No Action", "Postponed", "Rejected", "Withdrawn"))
+       caption = "www.senate.gov") 
 library(gridExtra)
 grid.arrange(p,q, nrow = 2)
 ```
